@@ -1,0 +1,16 @@
+# Row level security tests on every change to the schema or the tests (section 11).
+name: RLS tests
+on:
+  push:
+    paths: ["supabase/**", "tests/**", ".github/workflows/rls.yml"]
+  pull_request:
+    paths: ["supabase/**", "tests/**"]
+jobs:
+  rls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python tests/gen_rls.py && git diff --exit-code tests/rls.sql
+      - run: python tests/run_rls.py
