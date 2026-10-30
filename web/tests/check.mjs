@@ -26,6 +26,7 @@ async function signIn(page, email) {
 }
 
 const browser = await chromium.launch();
+const foreign = new Set();
 const screens = [
   ["sign in", null, async (p) => { await p.goto(BASE); await p.evaluate(() => localStorage.clear()); await p.reload(); await p.waitForSelector("#email"); }],
   ["privacy note", null, async (p) => { await p.goto(BASE + "#/privacy"); await p.waitForSelector("h1"); }],
@@ -41,10 +42,11 @@ const screens = [
   ["end of batch", "alice@example.org", async (p) => { await p.goto(BASE + "#/b/b-demo-01/end"); await p.waitForSelector("#f"); }],
   ["admin", "owner@example.org", async (p) => { await p.goto(BASE + "#/admin"); await p.waitForSelector("table"); }],
 ];
-for (const [w, h, label] of [[390, 844, "phone"], [1280, 860, "desktop"]]) {
+for (const [w, h, label] of [[375, 812, "phone"], [1280, 860, "desktop"]]) {
   for (const scheme of ["light", "dark"]) {
     const ctx = await browser.newContext({ viewport: { width: w, height: h }, colorScheme: scheme });
     const page = await ctx.newPage();
+    page.on("request", (r) => { const u = new URL(r.url()); if (!["localhost", "127.0.0.1"].includes(u.hostname) && !["data:", "blob:"].includes(u.protocol)) foreign.add(u.host); });
     for (const [name, who, go] of screens) {
       if (who) await signIn(page, who);
       await go(page);
@@ -101,11 +103,41 @@ for (const [w, h, label] of [[390, 844, "phone"], [1280, 860, "desktop"]]) {
   log("gold item looks like any other", !/gold/i.test(html), "the page has no gold field or label");
   await ctx.close();
 }
+// Contrast of every token pairing used for text, read from the live CSS in both themes (STYLE.md 7)
+const PAIRS = [
+  ["--text", "--bg", "body text on the page"], ["--text", "--surface", "text on the footer and panels"], ["--text", "--surface-raised", "text on cards"],
+  ["--text-muted", "--bg", "muted text on the page"], ["--text-muted", "--surface", "muted text on the footer"], ["--text-muted", "--surface-raised", "muted text on cards"],
+  ["--accent", "--bg", "links on the page"], ["--accent", "--surface-raised", "links and outlines on cards"], ["--on-accent", "--accent", "button and selected answer text"],
+  ["--on-accent", "--accent-hover", "button text on hover"], ["--warning", "--bg", "warnings on the page"], ["--warning", "--surface-raised", "warnings on cards"],
+  ["--text", "--warning-tint", "text on a warning notice"], ["--text", "--accent-tint", "text on the demo notice"],
+  ["--chip-fg-identical", "--grade-identical", "identical chip"], ["--chip-fg-equivalent", "--grade-equivalent", "equivalent chip"],
+  ["--chip-fg-related", "--grade-related", "related chip"], ["--chip-fg-distinct", "--grade-distinct", "distinct chip"],
+];
+const contrast = [];
+for (const scheme of ["light", "dark"]) {
+  const ctx = await browser.newContext({ colorScheme: scheme });
+  const page = await ctx.newPage();
+  await page.goto(BASE);
+  const vals = await page.evaluate((names) => Object.fromEntries(names.map((n) => [n, getComputedStyle(document.documentElement).getPropertyValue(n).trim()])),
+    [...new Set(PAIRS.flat().filter((x) => x.startsWith("--")))]);
+  const lum = (hex) => { const c = hex.replace("#", "").match(/../g).map((x) => parseInt(x, 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  for (const [fg, bg, use] of PAIRS) {
+    const a = lum(vals[fg]), b = lum(vals[bg]), r = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    contrast.push([scheme, use, fg, vals[fg], bg, vals[bg], r]);
+  }
+  await ctx.close();
+}
+const lowC = contrast.filter((c) => c[6] < 4.5);
+log("every text pairing reaches WCAG AA 4.5 to 1 in both themes", lowC.length === 0, lowC.map((c) => `${c[0]} ${c[1]} ${c[6].toFixed(2)}`).join(", ") || `${contrast.length} pairings, lowest ${Math.min(...contrast.map((c) => c[6])).toFixed(2)}`);
+log("no font, script or image from a third party host", foreign.size === 0, foreign.size ? [...foreign].join(", ") : "every request went to the site itself");
 await browser.close();
 server.kill();
 const L = ["# Front end check report", "", `Run ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC by \`web/tests/check.mjs\` with headless Chromium (Playwright) on the demo build, which runs on fictional data in the browser. ` +
   "Accessibility by axe-core with the WCAG 2.1 A and AA rules. Sideways scroll is page width beyond the viewport. Screenshots in `screens/`. The manual check of the review screen is in the section below.", "",
   `${results.length} checks, ${results.filter((r) => r[1]).length} passed.`, "", "| Check | Result | Detail |", "|---|---|---|",
-  ...results.map(([n, ok, d]) => `| ${n} | ${ok ? "pass" : "FAIL"} | ${String(d).replace(/\|/g, "/")} |`)];
+  ...results.map(([n, ok, d]) => `| ${n} | ${ok ? "pass" : "FAIL"} | ${String(d).replace(/\|/g, "/")} |`),
+  "", "## Contrast of the token pairings used for text", "", "| Theme | Use | Text | Background | Ratio | AA |", "|---|---|---|---|---|---|",
+  ...contrast.map(([t, u, f, fv, b, bv, r]) => `| ${t} | ${u} | ${f} ${fv} | ${b} ${bv} | ${r.toFixed(2)} | ${r >= 4.5 ? "pass" : "FAIL"} |`)];
 writeFileSync(OUT + "frontend-check-report.md", L.join("\n") + "\n");
 process.exit(results.every((r) => r[1]) ? 0 : 1);

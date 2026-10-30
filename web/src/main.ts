@@ -3,7 +3,11 @@
 import { createClient } from "@supabase/supabase-js";
 import "./style.css";
 import { type Answer, type Api, type Item, SupabaseApi } from "./api";
-import { BRIEF, CONTEXT_LABELS, GRADES, PROVENANCE, SITE, VOCAB_NAME, type Vocab } from "./config";
+import macroscopeColour from "./brand/logos/macroscope-colour.png";
+import macroscopeWhite from "./brand/logos/macroscope-white.png";
+import sshocColour from "./brand/logos/sshoc-nl-colour.png";
+import sshocWhite from "./brand/logos/sshoc-nl-white.png";
+import { BRIEF, CONTEXT_LABELS, GRADES, PROVENANCE, SITE, SUPPORT, VOCAB_NAME, type Vocab } from "./config";
 import { DemoApi } from "./demo";
 
 const URL_ = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -32,7 +36,22 @@ $("#brand").textContent = SITE.title;
   };
 }
 
-function render(html: string, title: string) {
+// SSHOC-NL first, 32 px apart, colour on light and white on dark (STYLE.md 5).
+function logos() {
+  const one = (name: string, url: string, colour: string, white: string) => {
+    const imgs = `<img class="logo-light" src="${colour}" alt=""><img class="logo-dark" src="${white}" alt="">`;
+    return url ? `<a href="${esc(url)}" aria-label="${name}">${imgs}</a>` : `<span role="img" aria-label="${name}">${imgs}</span>`;
+  };
+  return `<div class="supporters"><p class="line">${esc(SUPPORT.line)}</p><div class="logos">${one("SSHOC-NL", SUPPORT.sshocUrl, sshocColour, sshocWhite)}${one("Macroscope", SUPPORT.macroscopeUrl, macroscopeColour, macroscopeWhite)}</div></div>`;
+}
+
+// The footer carries the logos on every page except the review screen, which has no logos (STYLE.md 5), and the sign
+// in screen, which shows them below the form.
+function render(html: string, title: string, footer = true) {
+  const foot = $("#foot");
+  foot.hidden = !footer;
+  foot.innerHTML = footer ? logos() : "";
+  main.classList.remove("fade"); void main.offsetWidth; main.classList.add("fade");
   main.innerHTML = (api.demo ? `<p class="demo" role="note">Demo mode with fictional data. Sign in as alice@example.org or owner@example.org with code 123456.</p>` : "") + html;
   document.title = `${title} · ${SITE.title}`;
   main.focus({ preventScroll: true });
@@ -63,7 +82,8 @@ function viewSignIn(msg = "") {
       <input id="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
       <button type="submit">Sign in</button>
     </form>
-    <p id="msg" role="status" class="muted">${esc(msg)}</p></section>`, "Sign in");
+    <p id="msg" role="status" class="${msg ? "warn" : "muted"}">${esc(msg)}</p>
+    <div class="signin-logos">${logos()}</div></section>`, "Sign in", false);
   const email = $<HTMLInputElement>("#email");
   email.focus();
   $("#f1").onsubmit = async (e) => {
@@ -76,7 +96,7 @@ function viewSignIn(msg = "") {
   $("#f2").onsubmit = async (e) => {
     e.preventDefault();
     const ok = await api.verify(email.value.trim().toLowerCase(), $<HTMLInputElement>("#code").value.trim()).catch(() => false);
-    if (ok) location.hash = "#/"; else $("#msg").textContent = "That code did not work. Check it, or ask for a new one.";
+    if (ok) location.hash = "#/"; else { $("#msg").textContent = "That code did not work. Check it, or ask for a new one."; $("#msg").className = "warn"; }
     if (ok) route();
   };
 }
@@ -132,7 +152,7 @@ const catList = (cs: Item["response_categories"]) => cs && cs.length ? `<ul clas
 function constructCard(i: Item) {
   return `<article class="card" aria-labelledby="ct"><p class="eyebrow">Construct</p><h2 id="ct" class="h3">${esc(i.construct_label)}</h2>
     <p>${esc(i.construct_definition)}</p>${i.construct_exclusions ? `<p class="muted">${esc(i.construct_exclusions)}</p>` : ""}
-    ${i.construct_definition_provenance ? `<p class="tiny muted">${esc(PROVENANCE[i.construct_definition_provenance] ?? i.construct_definition_provenance)}</p>` : ""}</article>`;
+    ${i.construct_definition_provenance ? `<p class="provenance">${esc(PROVENANCE[i.construct_definition_provenance] ?? i.construct_definition_provenance)}</p>` : ""}</article>`;
 }
 
 function itemCard(i: Item) {
@@ -142,26 +162,30 @@ function itemCard(i: Item) {
       const v = Array.isArray(c[k]) ? (c[k] as unknown[]).join(", ") : c[k];
       return `<dt>${esc(lab)}</dt><dd${k === "variable_name" ? ' class="mono"' : ""}>${esc(v)}</dd>`;
     });
-    return `<article class="card" aria-labelledby="it"><p class="eyebrow">Register variable</p><h2 id="it" class="h3">${esc(c.label_en || c.label || i.measure_pid)}</h2><dl class="kv">${rows.join("")}</dl></article>`;
+    return `<article class="card" aria-labelledby="it"><p class="eyebrow">Register variable</p><h2 id="it" class="h3">${esc(c.label_en || c.label || i.measure_pid)}</h2><dl class="kv">${rows.join("")}</dl>${itemFoot(i)}</article>`;
   }
   return `<article class="card" aria-labelledby="it"><p class="eyebrow">Survey question</p><h2 id="it" class="h3">${esc(i.programme)}</h2>
     <p class="muted small">${esc(i.waves)}</p><p class="q">${esc(i.question_text || "(no question text held)")}</p>
     ${i.question_text_en && i.question_text_en !== i.question_text ? `<p class="muted">${esc(i.question_text_en)}</p>` : ""}
-    ${catList(i.response_categories)}${i.universe_text ? `<p class="small"><span class="muted">Asked of</span> ${esc(i.universe_text)}</p>` : ""}</article>`;
+    ${catList(i.response_categories)}${i.universe_text ? `<p class="small"><span class="muted">Asked of</span> ${esc(i.universe_text)}</p>` : ""}${itemFoot(i)}</article>`;
+}
+
+function itemFoot(i: Item) {
+  return `<p class="provenance"><span class="mono">${esc(i.measure_pid)}</span> · ${esc(i.export_version)}${i.method && i.method !== "not_graded" ? ` · graded by ${esc(i.method.replace(/_/g, " "))}` : ""}</p>`;
 }
 
 function anchorCard(i: Item) {
   return `<article class="card compact" aria-labelledby="an"><p class="eyebrow" id="an">Compared with</p><p>${esc(i.anchor_question_text)}</p>${catList(i.anchor_response_categories)}</article>`;
 }
 
-function reasonsText(i: Item) {
+function reasonsList(i: Item) {
   const r = (i.grade_reasons || {}) as Record<string, any>;
   const parts: string[] = [];
-  if (Array.isArray(r.differs) && r.differs.length) parts.push("differs in " + r.differs.join(", ").replace(/_/g, " "));
+  if (Array.isArray(r.differs) && r.differs.length) parts.push("Differs in " + r.differs.join(", ").replace(/_/g, " "));
   if (r.reason) parts.push(String(r.reason));
-  if (r.recode) parts.push("recode " + String(r.recode));
-  if (r.attributes) parts.push(Object.entries(r.attributes).map(([k, v]) => `${k} ${v}`).join(", "));
-  return parts.join(". ");
+  if (r.recode) parts.push("Recode " + String(r.recode));
+  if (r.attributes) parts.push(...Object.entries(r.attributes).map(([k, v]) => `${k} ${v}`));
+  return parts.length ? `<ul class="reasons">${parts.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>` : "";
 }
 
 async function viewItem(batchId: string, pos: number) {
@@ -181,18 +205,19 @@ async function viewItem(batchId: string, pos: number) {
     for (const k of ["belongs", "better_construct_pid", "better_construct_text", "reject_reason", "member_answers", "grade_ok", "correct_grade", "comment", "seconds_on_item"] as const)
       if (a[k] !== undefined) (clean as any)[k] = a[k];
     $("#saved").textContent = "Saving";
-    try { await api.save(clean); $("#saved").textContent = "Saved"; } catch { $("#saved").textContent = "Not saved. Check your connection and answer again."; }
+    try { await api.save(clean); $("#saved").textContent = "Saved"; $("#saved").classList.remove("warn"); }
+    catch { $("#saved").textContent = "Not saved. Check your connection and answer again."; $("#saved").classList.add("warn"); }
     draw();
   };
   const next = () => { if (idx + 1 < items.length) location.hash = `#/b/${batchId}/${items[idx + 1].position}`; else location.hash = `#/b/${batchId}/end`; };
   const back = () => { if (idx > 0) location.hash = `#/b/${batchId}/${items[idx - 1].position}`; };
 
-  render(`<p class="muted small" aria-live="polite">Item ${idx + 1} of ${items.length} <span id="saved" class="saved"></span></p>
+  render(`<div class="progress"><span>Item ${idx + 1} of ${items.length}</span><div class="bar" role="progressbar" aria-label="Position in batch" aria-valuemin="1" aria-valuemax="${items.length}" aria-valuenow="${idx + 1}"><span style="width:${(100 * (idx + 1)) / items.length}%"></span></div><span id="saved" class="saved" aria-live="polite"></span></div>
     <div class="pair">${constructCard(i)}${curation === "membership" ? "" : itemCard(i)}</div>
     ${graded ? anchorCard(i) : ""}<div id="qs"></div>
     <details class="comment"><summary>Add a comment</summary><label for="cm" class="sr">Comment</label><textarea id="cm" rows="3">${esc(a.comment)}</textarea></details>
-    <nav class="row nav" aria-label="Items"><button class="ghost" id="back" ${idx === 0 ? "disabled" : ""}>Back</button><span class="grow"></span><button id="next">${idx + 1 < items.length ? "Next" : "Finish"}</button></nav>`,
-    `Item ${idx + 1}`);
+    <nav class="row nav" aria-label="Items"><button class="ghost" id="back" ${idx === 0 ? "disabled" : ""}>Back</button><span class="grow"></span><button id="next">${idx + 1 < items.length ? "Next item" : "Finish"}</button></nav>`,
+    `Item ${idx + 1}`, false);
   $("#back").onclick = back;
   $("#next").onclick = next;
   $<HTMLTextAreaElement>("#cm").onchange = (e) => save({ comment: (e.target as HTMLTextAreaElement).value });
@@ -235,7 +260,7 @@ async function viewItem(batchId: string, pos: number) {
       : `<fieldset><legend>Does this ${vocab === "rvv" ? "variable" : "item"} measure this construct?</legend><div class="row wrap">${btn("b", "yes", a.belongs, "Yes", "Y")}${btn("b", "no", a.belongs, "No", "N")}${btn("b", "unsure", a.belongs, "Unsure", "U")}</div></fieldset>
          ${a.belongs === "no" ? neighbours(a.better_construct_pid) : ""}`;
     const q2 = graded && a.belongs && a.belongs !== "no" ? `<fieldset><legend>Is the grade right?</legend>
-        <p><strong>${esc(i.grade)}</strong>. ${esc(GRADES[vocab][i.grade!] ?? "")}</p>${reasonsText(i) ? `<p class="muted small">${esc(reasonsText(i))}</p>` : ""}
+        <p><span class="chip g-${esc(i.grade)}">${esc(i.grade)}</span> ${esc(GRADES[vocab][i.grade!] ?? "")}</p>${reasonsList(i)}
         <div class="row wrap">${btn("g", "yes", a.grade_ok, "Yes", "Y")}${btn("g", "no", a.grade_ok, "No", "N")}${btn("g", "unsure", a.grade_ok, "Unsure", "U")}</div>
         ${a.grade_ok === "no" ? `<div class="row wrap" role="group" aria-label="Correct grade">${Object.keys(GRADES[vocab]).map((g) => btn("cg", g, a.correct_grade, g)).join("")}</div>` : ""}</fieldset>` : "";
     q.innerHTML = q1 + q2;
@@ -311,7 +336,7 @@ async function viewAdmin() {
       <label for="ex">Export</label><select id="ex">${ex.map((e) => `<option>${esc(e.export_version)}</option>`).join("")}</select>
       <label for="qu">From</label><select id="qu"><option value="">quality sample</option></select>
       <label for="sz">Items</label><input id="sz" type="number" min="1" max="100" value="25" style="width:6rem">
-      <button type="submit">Build and open</button></form><p id="nbm" role="status" class="muted small"></p>
+      <button type="submit">Build and open</button></form><p id="nbm" role="status" class="small"></p>
     <h2>Batches</h2><div class="scroll"><table><thead><tr><th scope="col">Batch</th><th scope="col">Vocabulary</th><th scope="col">Kind</th><th scope="col">Status</th><th scope="col">Completion per reviewer</th><th scope="col"><span class="sr">Action</span></th></tr></thead><tbody>
     ${bs.map((b) => `<tr><td class="mono small">${esc(b.batch_id)}<div class="muted tiny">${esc(b.description)}</div></td><td>${esc(b.vocabulary)}</td><td>${esc(b.kind)}</td><td>${esc(b.status)}</td>
       <td class="small">${b.per_reviewer.map((p) => `${esc(p.reviewer)} ${p.answered} of ${p.items}`).join("<br>")}</td>

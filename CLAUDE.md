@@ -333,3 +333,7 @@ The loader validates every line against a JSON schema in `schema/item.schema.jso
 ### 12.7 Curation queues (amendment 1, added 30 October 2026, 21:30)
 
 Besides quality samples, a vocabulary can offer curation queues, every item of a queue rather than a sample, from `review/queues/<export_version>/<queue>.jsonl`. They are for decisions that must be made on every item (where a variable belongs, whether a noted member moves). Curation items show the construct and the five neighbours as usual, and add two answers to question 1, "belongs in a neighbour" (pick one) and "reject" (with a reason from a list given in the queue file). A membership item shows the construct with its members and the note, and asks per named member stay, move or reject. Curation batches are built in the queue's order, not by stratified sampling, for the owner first. Answers are exported like any other and applied by the vocabulary's own apply step. The site never edits a vocabulary. Curation answers are not used for quality estimates, and quality sample items are never drawn from an open queue.
+
+### 12.8 Visual design (amendment 1, added 30 October 2026, 23:00)
+
+The look of the site follows `brand/STYLE.md` and its tokens in `brand/tokens.css`, which replace the line on a neutral identity in section 5. Subtle SSHOC-NL and Macroscope branding, no ODISSEI mark. Copy the tokens and logos into the front end build rather than editing them in place, and report any deviation from the guide at stop point 2 with the checks of its section 7.

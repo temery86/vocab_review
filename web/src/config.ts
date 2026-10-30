@@ -6,6 +6,14 @@ export const SITE = {
   clientVersion: "0.1.0",
 };
 
+// Branding at the edges of the page (brand/STYLE.md section 5). The wording is for Tom Emery to confirm. The project
+// sites are left empty until their public addresses are confirmed, and the logos are shown unlinked meanwhile.
+export const SUPPORT = {
+  line: "Supported by SSHOC-NL and Macroscope",
+  sshocUrl: "",
+  macroscopeUrl: "",
+};
+
 export type Vocab = "scv" | "rvv";
 
 export const VOCAB_NAME: Record<Vocab, string> = {

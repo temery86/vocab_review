@@ -10,6 +10,8 @@
     "check": "node tests/check.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/ubuntu-sans": "^5.2.0",
+    "@fontsource-variable/ubuntu-sans-mono": "^5.2.0",
     "@supabase/supabase-js": "^2.45.4"
   },
   "devDependencies": {
