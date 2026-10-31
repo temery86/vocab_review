@@ -1,8 +1,8 @@
 # Row level security test report
 
-Run 2026-10-30 21:28 UTC on Postgres 16.15 in a local container, with the Supabase roles and auth.jwt() emulated as Supabase implements them (`tests/supabase_shim.sql`). Data is the fictional seed (`tests/seed.sql`).
+Run 2026-10-31 18:30 UTC on Postgres 16.15 in a local container, with the Supabase roles and auth.jwt() emulated as Supabase implements them (`tests/supabase_shim.sql`). Data is the fictional seed (`tests/seed.sql`).
 
-66 cases, 66 passed, 0 failed.
+67 cases, 67 passed, 0 failed.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -64,6 +64,7 @@ Run 2026-10-30 21:28 UTC on Postgres 16.15 in a local container, with the Supaba
 | reviewer cannot close a batch | pass | expected rows=0, got rows=0 |
 | owner closes exactly the batch named | pass | expected rows=1, got rows=1 |
 | owner cannot change a batch's sampling specification | pass | permission denied for table batch |
+| reviewer cannot mark a batch as a flow test | pass | permission denied for table batch |
 | owner builds the next owner batch | pass | rollback_ok |
 | owner builds the next curation batch | pass | rollback_ok |
 | reviewer cannot build an owner batch | pass | owner only |

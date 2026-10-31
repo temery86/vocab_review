@@ -20,7 +20,9 @@ def sh(*a, **k):
 
 
 def psql(sql_file=None, sql=None):
-    cmd = ["docker", "exec", "-i", NAME, "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-q", "-A", "-t", "-F", "\t"]
+    # Over TCP, not the socket. While the image initialises it runs a temporary server on the socket only, then
+    # restarts, so a socket check can pass too early (seen on GitHub runners). TCP answers only once the real one is up.
+    cmd = ["docker", "exec", "-i", NAME, "psql", "-h", "127.0.0.1", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-q", "-A", "-t", "-F", "\t"]
     if sql is not None:
         return sh(*cmd, "-c", sql)
     return subprocess.run(cmd, stdin=open(sql_file), capture_output=True, text=True)
@@ -30,10 +32,14 @@ sh("docker", "rm", "-f", NAME)
 r = sh("docker", "run", "-d", "--name", NAME, "-e", "POSTGRES_PASSWORD=test", "postgres:16-alpine")
 if r.returncode:
     sys.exit(r.stderr)
-for _ in range(60):
-    if psql(sql="SELECT 1").returncode == 0:
+ok = 0
+for _ in range(90):
+    ok = ok + 1 if psql(sql="SELECT 1").returncode == 0 else 0
+    if ok >= 3:                                   # three answers in a row, so not a server about to restart
         break
     time.sleep(1)
+else:
+    sys.exit("Postgres did not become ready")
 try:
     files = [ROOT / "tests" / "supabase_shim.sql", *sorted((ROOT / "supabase" / "migrations").glob("*.sql")), ROOT / "tests" / "seed.sql",
              ROOT / "tests" / "rls.sql"]
