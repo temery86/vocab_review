@@ -18,10 +18,15 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "20", cache: npm, cache-dependency-path: web/package-lock.json }
       - run: npm ci
-      - run: npm run build
+      - run: |
+          if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
+            echo "::error::SUPABASE_URL and SUPABASE_ANON_KEY are not set as repository variables or secrets (Settings, Secrets and variables, Actions). Refusing to publish the demo build."
+            exit 1
+          fi
+          npm run build
         env:
-          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL || secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
       - uses: actions/upload-pages-artifact@v3
         with: { path: web/dist }
   deploy:
