@@ -1,0 +1,98 @@
+/* Design tokens for the vocabulary review site. See STYLE.md. */
+:root {
+  /* Brand */
+  --brand-navy: #223C87;        /* SSHOC-NL blue, sampled from the logo */
+  --brand-red: #FF0F48;         /* Macroscope red, sampled from the logo. Decorative only */
+
+  /* Surfaces and text, light */
+  --bg: #FFFFFF;
+  --surface: #F6F7FA;
+  --surface-raised: #FFFFFF;
+  --border: #DDE1EA;
+  --text: #1A1D24;              /* 16.9:1 on --bg */
+  --text-muted: #5A6070;        /* 6.3:1 on --bg */
+
+  /* Interaction */
+  --accent: #223C87;            /* 10.2:1 on --bg */
+  --accent-hover: #1B3070;
+  --accent-tint: #E9EDF8;
+  --on-accent: #FFFFFF;
+  --focus: #223C87;
+
+  /* States. Never red, never green (STYLE.md section 5) */
+  --warning: #B4530B;           /* 5.0:1 on --bg */
+  --warning-tint: #FBEFE5;
+
+  /* Ordinal grade ramp, one hue */
+  --grade-identical: #223C87;
+  --grade-equivalent: #4A62AE;
+  --grade-related: #8394CC;
+  --grade-distinct: #C3CBE6;
+
+  /* Type */
+  --font-sans: "Ubuntu Sans Variable", "Ubuntu Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Ubuntu Sans Mono Variable", "Ubuntu Sans Mono", ui-monospace, "SFMono-Regular", monospace;
+  --fs-xs: 0.8125rem;   /* 13 */
+  --fs-sm: 0.875rem;    /* 14 */
+  --fs-base: 1rem;      /* 16 */
+  --fs-lg: 1.125rem;    /* 18 */
+  --fs-xl: 1.375rem;    /* 22 */
+  --fs-2xl: 1.75rem;    /* 28 */
+  --lh-body: 1.55;
+  --lh-tight: 1.25;
+
+  /* Space, radius, shadow */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+  --radius: 8px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(20, 24, 40, 0.06), 0 2px 8px rgba(20, 24, 40, 0.04);
+  --content-max: 1100px;
+  --brand-rule: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151C;
+    --surface: #191D26;
+    --surface-raised: #1E2330;
+    --border: #2C3242;
+    --text: #E8EAF0;            /* 15.2:1 */
+    --text-muted: #9AA0AE;      /* 7.0:1 */
+    --accent: #9DB0EC;          /* 8.6:1 */
+    --accent-hover: #B7C6F2;
+    --accent-tint: #222C48;
+    --on-accent: #12151C;
+    --focus: #9DB0EC;
+    --warning: #F0A35E;         /* 8.8:1 */
+    --warning-tint: #3A2A1C;
+    --grade-identical: #C3CBE6;
+    --grade-equivalent: #9DB0EC;
+    --grade-related: #6F82C2;
+    --grade-distinct: #45569A;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151C;
+  --surface: #191D26;
+  --surface-raised: #1E2330;
+  --border: #2C3242;
+  --text: #E8EAF0;
+  --text-muted: #9AA0AE;
+  --accent: #9DB0EC;
+  --accent-hover: #B7C6F2;
+  --accent-tint: #222C48;
+  --on-accent: #12151C;
+  --focus: #9DB0EC;
+  --warning: #F0A35E;
+  --warning-tint: #3A2A1C;
+  --grade-identical: #C3CBE6;
+  --grade-equivalent: #9DB0EC;
+  --grade-related: #6F82C2;
+  --grade-distinct: #45569A;
+  --shadow: none;
+}
+
+body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: var(--fs-base); line-height: var(--lh-body); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

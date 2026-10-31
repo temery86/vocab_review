@@ -1,0 +1,23 @@
+{
+  "name": "vocabulary-review",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "check": "node tests/check.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/ubuntu-sans": "^5.2.0",
+    "@fontsource-variable/ubuntu-sans-mono": "^5.2.0",
+    "@supabase/supabase-js": "^2.45.4"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "playwright": "^1.48.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}
