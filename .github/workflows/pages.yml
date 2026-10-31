@@ -1,6 +1,6 @@
 # Build the front end and publish it to GitHub Pages from main (sections 2 and 10, V-01).
 # The Supabase URL and anon key come from repository variables. The anon key is public by design (section 2).
-# No review data and no secret is in the build.
+# No review data and no secret is in the build. The site is published at https://temery86.github.io/vocab_review/
 name: Pages
 on:
   push:
