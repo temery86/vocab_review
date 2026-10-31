@@ -115,7 +115,9 @@ function viewPrivacy() {
 // 2. Home
 async function viewHome() {
   keyHandler = null;
-  const me = await api.me();
+  let me;
+  try { me = await api.me(); }
+  catch (e) { return render(`<section class="narrow"><h1>Something is not working</h1><p class="notice">${esc((e as Error).message)} You are signed in, so this is not about your address. Please let the project know.</p></section>`, "Not available"); }
   if (!me) return viewSignIn(await api.signedIn() ? "This address is not registered for the review." : "");
   $("#who").textContent = `${me.name}${me.role === "owner" ? " · owner" : ""}`;
   const bs = await api.batches();

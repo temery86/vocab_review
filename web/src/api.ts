@@ -62,7 +62,8 @@ export class SupabaseApi implements Api {
   async me() {
     const email = await this.signedIn();
     if (!email) return null;
-    const { data } = await this.db().from("reviewer").select("email,name,role,pseudonym").eq("email", email.toLowerCase()).maybeSingle();
+    const { data, error } = await this.db().from("reviewer").select("email,name,role,pseudonym").eq("email", email.toLowerCase()).maybeSingle();
+    if (error) throw new Error(`The review data could not be reached (${error.code ?? "error"}).`);   // for example PGRST106, schema not exposed
     return (data as Me) ?? null;
   }
   async batches() {
