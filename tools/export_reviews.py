@@ -30,7 +30,8 @@ CODEBOOK = {
                 "answers per member on membership items, grade_ok and correct_grade the answers to question 2, seconds_on_item the time on the item.",
     "batch_comment": "The free comments at the end of a batch. reviewer is the pseudonym.",
     "reviews_joined": "One row per current response (the latest per assignment), with the batch, the assignment, the reviewer pseudonym, "
-                      "reviewer_role (owner or reviewer), queue (empty for quality items) and every item field beside it.",
+                      "reviewer_role (owner or reviewer), flow_test (true for answers in a batch marked as a flow test, which analysis leaves out), "
+                      "queue (empty for quality items) and every item field beside it.",
 }
 
 
@@ -90,6 +91,7 @@ def main():
     for x in comments:
         x["reviewer"] = ps(x.pop("reviewer_email"))
     cc = [c if c != "reviewer_email" else "reviewer" for c in cc]
+    flow = {x["batch_id"] for x in batches if x.get("flow_test")}
     by_a = {x["assignment_id"]: x for x in assigns}
     by_i = {x["item_id"]: x for x in items}
     current = {}
@@ -100,7 +102,8 @@ def main():
     for aid, r in sorted(current.items()):
         s, i = by_a[aid], by_i[by_a[aid]["item_id"]]
         row = {"response_id": r["response_id"], "submitted_at": r["submitted_at"], "batch_id": s["batch_id"], "assignment_id": aid,
-               "position": s["position"], "is_overlap": s["is_overlap"], "reviewer": s["reviewer"], "reviewer_role": role_of.get(s["reviewer"], ""),
+               "position": s["position"], "is_overlap": s["is_overlap"], "flow_test": s["batch_id"] in flow,
+               "reviewer": s["reviewer"], "reviewer_role": role_of.get(s["reviewer"], ""),
                **{k: r[k] for k in rc if k not in ("response_id", "assignment_id", "submitted_at")}, **i}
         joined.append(row)
         jc = list(row)

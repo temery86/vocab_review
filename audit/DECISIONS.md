@@ -51,3 +51,17 @@ Decided by. Tom Emery on 2026-10-30.
 Status. Decided, a stop point.
 Choice. Before anyone else is invited. Custom SMTP with SPF, DKIM and DMARC, the privacy note, the paid tier, a pilot with two or three friendly reviewers, and a reviewer list with expertise and programme tags.
 Decided by. Tom Emery on 2026-10-30.
+
+## V-03 SMTP, decided
+Status. Decided on 31 October 2026 by Tom Emery. Revises the deferral of 30 October.
+Choice. Custom SMTP through Resend on the sending domain odissei-data.nl, verified in Resend with SPF and DKIM, set up in the Supabase project by Tom Emery. Sign in codes go out through it. The code length is the Supabase project setting (8 digits at present), and the sign in field accepts 6 to 10 digits. The SMTP password stays in the Supabase dashboard and is never put in the repository or `.env`.
+Note. The site itself carries no ODISSEI mark (section 12.8). The sending domain is ODISSEI's, which reviewers will see in the From line.
+Constrains. V-10, whose SMTP item is done.
+
+## V-10 progress
+- Custom SMTP done (V-03).
+- Privacy note approved by Tom Emery on 31 October 2026 as shown on the site, with data kept until the review project ends and for at most five years.
+- Still open before the first invited reviewer. The paid Supabase tier, a pilot with two or three friendly reviewers, and a reviewer list with expertise and programme tags.
+
+## Flow test batches
+Decided on 31 October 2026 by Tom Emery. Batch b-20261031-02 (register, owner) was a run through of the flow, at a median of one second per item, and is marked as a flow test (`review.batch.flow_test`, migration 0003). Answers in flow test batches are kept, as every answer is, but analysis leaves them out, and their items can be drawn again for the same reviewer.

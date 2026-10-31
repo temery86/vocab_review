@@ -448,6 +448,14 @@ DO $$ BEGIN SET LOCAL ROLE authenticated; PERFORM set_config('request.jwt.claims
   EXCEPTION WHEN others THEN RESET ROLE; INSERT INTO rls_result VALUES ('owner cannot change a batch''s sampling specification', true, SQLERRM); END;
 END $$;
 
+-- reviewer cannot mark a batch as a flow test
+DO $$ BEGIN SET LOCAL ROLE authenticated; PERFORM set_config('request.jwt.claims', '{"email":"alice@example.org"}', true); 
+  BEGIN
+    EXECUTE 'UPDATE review.batch SET flow_test = true WHERE batch_id = ''b-20261030-01''';
+    RESET ROLE; INSERT INTO rls_result VALUES ('reviewer cannot mark a batch as a flow test', false, 'statement succeeded');
+  EXCEPTION WHEN others THEN RESET ROLE; INSERT INTO rls_result VALUES ('reviewer cannot mark a batch as a flow test', true, SQLERRM); END;
+END $$;
+
 -- owner builds the next owner batch
 DO $$ BEGIN SET LOCAL ROLE authenticated; PERFORM set_config('request.jwt.claims', '{"email":"owner@example.org"}', true); 
   BEGIN

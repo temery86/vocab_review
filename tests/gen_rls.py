@@ -106,6 +106,7 @@ CASES = [
     ("reviewer cannot close a batch", "rows", "authenticated", A, f"UPDATE review.batch SET status = 'closed' WHERE batch_id = '{OPEN}'", 0),
     ("owner closes exactly the batch named", "rows", "authenticated", O, f"UPDATE review.batch SET status = 'closed' WHERE batch_id = '{OPEN}'", 1),
     ("owner cannot change a batch's sampling specification", "denied", "authenticated", O, "UPDATE review.batch SET sampling_spec = '{}'"),
+    ("reviewer cannot mark a batch as a flow test", "denied", "authenticated", A, f"UPDATE review.batch SET flow_test = true WHERE batch_id = '{OPEN}'"),
     ("owner builds the next owner batch", "allowed", "authenticated", O, "SELECT review.owner_next_batch('test-0.0.1', 25, 0.5)"),
     ("owner builds the next curation batch", "allowed", "authenticated", O, "SELECT review.owner_next_queue_batch('test-0.0.1', 'placement', 5)"),
     ("reviewer cannot build an owner batch", "denied", "authenticated", A, "SELECT review.owner_next_batch('test-0.0.1', 25, 0.5)"),

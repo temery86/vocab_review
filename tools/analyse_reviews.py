@@ -72,14 +72,15 @@ def main():
     a = ap.parse_args()
     repo, d = Path(a.repo).resolve(), Path(a.export).resolve()
     vocab = vocab_of(repo)
-    J = load(d / "reviews_joined.jsonl")
+    J_all = load(d / "reviews_joined.jsonl")
+    J = [r for r in J_all if r.get("flow_test") not in (True, "true", "True")]      # flow test batches are left out
     comments = load(d / "batch_comment.jsonl")
     quality = [r for r in J if not r.get("queue")]
     for r in quality:
         r["stratum"] = js(r.get("stratum"))
         r["is_gold"] = r.get("is_gold") in (True, "true", "True")
     L = [f"# Review analysis, {vocab}, export {d.name}", "", f"Written {datetime.now(timezone.utc).date()} by `tools/analyse_reviews.py`. "
-         f"{len(J)} current responses, {len(quality)} on quality sample items, {len(J) - len(quality)} on curation items, which are not used for "
+         f"{len(J)} current responses ({len(J_all) - len(J)} more in batches marked as a flow test are left out), {len(quality)} on quality sample items, {len(J) - len(quality)} on curation items, which are not used for "
          "quality estimates. Owner rounds are reported apart from invited rounds and are not judged against the V-06 threshold.", ""]
     counts = {"responses": len(J), "quality": len(quality)}
     for group, sel in (("Invited rounds", lambda r: r.get("reviewer_role") != "owner"), ("Owner rounds", lambda r: r.get("reviewer_role") == "owner")):

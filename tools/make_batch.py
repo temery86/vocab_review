@@ -71,7 +71,8 @@ def main():
     if not vrow:
         raise SystemExit(f"no items of {a.export} loaded")
     vocab = vrow[0]
-    cur.execute("SELECT item_id FROM review.assignment WHERE reviewer_email = %s", [email])
+    cur.execute("""SELECT s.item_id FROM review.assignment s JOIN review.batch b ON b.batch_id = s.batch_id
+        WHERE s.reviewer_email = %s AND NOT b.flow_test""", [email])                      # flow test batches do not count
     seen = {r[0] for r in cur.fetchall()}
 
     if a.queue:
@@ -92,8 +93,9 @@ def main():
         for iid, _, _, s, g in pool:
             if not g:
                 cells[tuple(str(s.get(k)) for k in CELLS[vocab])].append((iid, s))
-        cur.execute("""SELECT DISTINCT i.stratum FROM review.item i JOIN review.assignment s ON s.item_id = i.item_id WHERE s.reviewer_email = %s
-            AND i.export_version = %s""", [email, a.export])
+        cur.execute("""SELECT DISTINCT i.stratum FROM review.item i JOIN review.assignment s ON s.item_id = i.item_id
+            JOIN review.batch b ON b.batch_id = s.batch_id WHERE s.reviewer_email = %s AND i.export_version = %s AND NOT b.flow_test""",
+                    [email, a.export])
         covered = {tuple(str(s.get(k)) for k in CELLS[vocab]) for (s,) in cur.fetchall()}
         n_gold = round(a.size * 3 / 25)
         n_main = a.size - n_gold
