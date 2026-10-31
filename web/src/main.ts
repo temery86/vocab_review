@@ -379,6 +379,18 @@ async function route() {
   }
   return viewHome();
 }
-addEventListener("hashchange", route);
-route();
+// A sign in link returns with the session (or an error) in the address hash, which would clash with the page routes.
+// supabase-js reads it while it starts, then the hash is cleared and the routes take over.
+async function start() {
+  const h = location.hash;
+  if (/access_token=|error_description=|[?&]code=/.test(h + location.search)) {
+    await api.signedIn();
+    const err = new URLSearchParams(h.replace(/^#/, "")).get("error_description");
+    history.replaceState(null, "", location.pathname + (api.demo ? "?demo" : "") + "#/");
+    if (err) return viewSignIn(`That link did not work (${err}). Ask for a new code.`);
+  }
+  addEventListener("hashchange", route);
+  route();
+}
+start();
 (window as any).__demoReset = () => { (api as any).reset?.(); route(); };

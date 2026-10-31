@@ -49,7 +49,9 @@ export class SupabaseApi implements Api {
 
   async start(email: string) {
     // shouldCreateUser false. Unknown addresses get the same neutral message as known ones (section 3).
-    await this.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+    // The email carries a six digit code ({{ .Token }} in the Supabase template). If the template still sends a link,
+    // the link comes back to this page and is accepted too (main.ts).
+    await this.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
   }
   async verify(email: string, code: string) {
     const { error } = await this.sb.auth.verifyOtp({ email, token: code, type: "email" });
