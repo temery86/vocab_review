@@ -31,7 +31,8 @@ def render(name, email, open_items):
     subject = subject.removeprefix("Subject:").strip()
     batch_line = (f"Your first batch of {open_items} items is ready for you." if open_items
                   else "We will let you know when your first batch is ready.")
-    body = body.strip().format(name=name.split(" (")[0], email=email, site_url=SITE_URL, privacy_url=SITE_URL + "#/privacy",
+    first = name.split(" (")[0].split()[0]                    # greeting by first name (Tom Emery, 31 October 2026)
+    body = body.strip().format(name=first, email=email, site_url=SITE_URL, privacy_url=SITE_URL + "#/privacy",
                                batch_line=batch_line)
     paras = [p for p in body.split("\n\n")]
     def para(p):
