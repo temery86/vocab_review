@@ -78,8 +78,8 @@ function viewSignIn(msg = "") {
       <button type="submit">Send me a code</button>
     </form>
     <form id="f2" class="stack" hidden>
-      <label for="code">Six digit code from the email</label>
-      <input id="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+      <label for="code">Code from the email</label>
+      <input id="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" required>
       <button type="submit">Sign in</button>
     </form>
     <p id="msg" role="status" class="${msg ? "warn" : "muted"}">${esc(msg)}</p>
@@ -95,7 +95,7 @@ function viewSignIn(msg = "") {
   };
   $("#f2").onsubmit = async (e) => {
     e.preventDefault();
-    const ok = await api.verify(email.value.trim().toLowerCase(), $<HTMLInputElement>("#code").value.trim()).catch(() => false);
+    const ok = await api.verify(email.value.trim().toLowerCase(), $<HTMLInputElement>("#code").value.replace(/\s/g, "")).catch(() => false);
     if (ok) location.hash = "#/"; else { $("#msg").textContent = "That code did not work. Check it, or ask for a new one."; $("#msg").className = "warn"; }
     if (ok) route();
   };
