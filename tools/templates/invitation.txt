@@ -1,0 +1,24 @@
+Subject: Invitation to review a vocabulary of survey questions and register variables
+
+Dear {name},
+
+I would like to invite you to take part in an expert review.
+
+We are building two vocabularies that link survey questions and register variables across European data to shared concepts, so that researchers can find comparable measures across surveys, countries and registers. Before anyone relies on them, we want experts to check how accurate they are.
+
+What it involves
+You will see one item at a time, a survey question or a register variable, next to the concept it has been linked to. You say whether the item measures that concept, and sometimes whether a comparison with a similar item is right. A batch has 25 items and takes about 15 minutes. You can stop at any point and come back, and "unsure" is always a valid answer.
+
+{batch_line}
+
+How to sign in
+Go to {site_url}
+Enter this email address ({email}). We will send you a one time code. There is no password.
+
+Your data
+We store your name, email address, answers and comments to measure the quality of the vocabularies. You are named in acknowledgements only if you agree. The privacy note is at {privacy_url}
+
+If you have questions, just reply to this email.
+
+With thanks,
+Tom Emery
