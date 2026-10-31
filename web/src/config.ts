@@ -16,9 +16,10 @@ export const SUPPORT = {
 
 export type Vocab = "scv" | "rvv";
 
-export const VOCAB_NAME: Record<Vocab, string> = {
+export const VOCAB_NAME: Record<Vocab | "mixed", string> = {
   scv: "survey questions",
   rvv: "register variables",
+  mixed: "survey questions and register variables",
 };
 
 // One line meaning of each grade, worded per vocabulary.
@@ -65,7 +66,7 @@ export const PROVENANCE: Record<string, string> = {
   pending: "definition pending",
 };
 
-export const BRIEF: Record<Vocab, { what: string; item: string; examples: Record<string, string> }> = {
+export const BRIEF: Record<Vocab | "mixed", { what: string; item: string; examples: Record<string, string> }> = {
   scv: {
     what: "A construct is what a question measures, defined without reference to any one survey, for example trust in parliament or the number of children in the household.",
     item: "Each item is one survey question, shown against the construct it has been mapped to.",
@@ -74,6 +75,16 @@ export const BRIEF: Record<Vocab, { what: string; item: string; examples: Record
       equivalent: "Household size asked as a number in one survey and in bands up to 8 or more in another.",
       related: "Smoking now in one survey and smoking in the last year in another.",
       distinct: "A question about trust in the police mapped to trust in parliament.",
+    },
+  },
+  mixed: {
+    what: "A construct is what a survey question or a register variable measures, defined without reference to any one survey, register or country, for example the number of children in the household or receipt of a family allowance.",
+    item: "This batch covers one topic from both sides. Some items are survey questions, others are register variables as an office documents them. Each is shown against the construct it has been linked to, and the card tells you which kind it is.",
+    examples: {
+      identical: "The same question or variable, with the same categories and population, in two sources.",
+      equivalent: "Household size as a number in one source and in bands up to 8 or more in another.",
+      related: "Annual earned income in one register and monthly gross wage in another.",
+      distinct: "A municipality of work placed with municipality of residence.",
     },
   },
   rvv: {

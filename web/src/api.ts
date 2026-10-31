@@ -4,7 +4,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export interface Me { email: string; name: string; role: "reviewer" | "owner"; pseudonym: string | null }
-export interface BatchInfo { batch_id: string; vocabulary: "scv" | "rvv"; kind: "quality" | "curation"; status: string; description: string | null;
+export interface BatchInfo { batch_id: string; vocabulary: "scv" | "rvv" | "mixed"; kind: "quality" | "curation"; status: string; description: string | null;
   items: number; answered: number }
 export interface Item {
   assignment_id: number; batch_id: string; position: number; batch_kind: string; item_id: string; vocabulary: "scv" | "rvv";

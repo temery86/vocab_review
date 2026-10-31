@@ -2,7 +2,7 @@
 and the matching auth user has been created with the Supabase admin API.
 
 Reads a CSV with columns email, name, affiliation, expertise, programmes, role, consent_acknowledgement (expertise and
-programmes separated by spaces). Rows are upserted by email. The owner gets pseudonym r00, others the next free
+programmes separated by semicolons, so a tag can have spaces, for example family policy; labour). Rows are upserted by email. The owner gets pseudonym r00, others the next free
 number. The auth user is created with the service key, email confirmed, no password, so sign in is by one time code
 only. The reviewer list holds personal data, so keep the CSV outside any repository.
 
@@ -60,8 +60,8 @@ def main():
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, affiliation = EXCLUDED.affiliation,
                 expertise = EXCLUDED.expertise, programmes = EXCLUDED.programmes, role = EXCLUDED.role,
                 consent_acknowledgement = EXCLUDED.consent_acknowledgement""",
-                        [email, x["name"].strip(), x.get("affiliation") or None, (x.get("expertise") or "").split(),
-                         (x.get("programmes") or "").split(), role, pseud, (x.get("consent_acknowledgement") or "").lower() in ("yes", "true", "1")])
+                        [email, x["name"].strip(), x.get("affiliation") or None, [t.strip() for t in (x.get("expertise") or "").split(";") if t.strip()],
+                         [t.strip() for t in (x.get("programmes") or "").split(";") if t.strip()], role, pseud, (x.get("consent_acknowledgement") or "").lower() in ("yes", "true", "1")])
             if not a.no_auth:
                 c["auth_created" if create_auth_user(email) == "created" else "auth_existing"] += 1
     con.commit()

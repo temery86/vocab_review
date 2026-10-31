@@ -72,17 +72,19 @@ def main():
     cur.execute("SELECT email, pseudonym, role FROM review.reviewer")
     who = {e: (p, r) for e, p, r in cur.fetchall()}
     ps = lambda e: who.get(e, ("unknown", ""))[0]
-    bc, batches = rows_of(cur, "SELECT * FROM review.batch WHERE vocabulary = %s ORDER BY batch_id", [vocab])
-    ac, assigns = rows_of(cur, """SELECT s.* FROM review.assignment s JOIN review.batch b ON b.batch_id = s.batch_id
-        WHERE b.vocabulary = %s ORDER BY s.assignment_id""", [vocab])
+    # By item vocabulary, so a mixed topic batch sends each answer to the repository its item belongs to.
+    bc, batches = rows_of(cur, """SELECT * FROM review.batch b WHERE EXISTS (SELECT 1 FROM review.assignment s JOIN review.item i ON i.item_id = s.item_id
+        WHERE s.batch_id = b.batch_id AND i.vocabulary = %s) ORDER BY batch_id""", [vocab])
+    ac, assigns = rows_of(cur, """SELECT s.* FROM review.assignment s JOIN review.item i ON i.item_id = s.item_id
+        WHERE i.vocabulary = %s ORDER BY s.assignment_id""", [vocab])
     rc, resps = rows_of(cur, """SELECT r.* FROM review.response r JOIN review.assignment s ON s.assignment_id = r.assignment_id
-        JOIN review.batch b ON b.batch_id = s.batch_id WHERE b.vocabulary = %s ORDER BY r.response_id""", [vocab])
+        JOIN review.item i ON i.item_id = s.item_id WHERE i.vocabulary = %s ORDER BY r.response_id""", [vocab])
     cc, comments = rows_of(cur, """SELECT c.* FROM review.batch_comment c JOIN review.batch b ON b.batch_id = c.batch_id
-        WHERE b.vocabulary = %s ORDER BY c.comment_id""", [vocab])
-    ic, items = rows_of(cur, """SELECT * FROM review.item WHERE item_id IN (SELECT s.item_id FROM review.assignment s
-        JOIN review.batch b ON b.batch_id = s.batch_id WHERE b.vocabulary = %s) ORDER BY item_id""", [vocab])
+        WHERE b.vocabulary IN (%s, 'mixed') ORDER BY c.comment_id""", [vocab])
+    ic, items = rows_of(cur, """SELECT * FROM review.item WHERE vocabulary = %s AND item_id IN (SELECT item_id FROM review.assignment)
+        ORDER BY item_id""", [vocab])
     cur.execute("""SELECT count(*) FROM review.response r JOIN review.assignment s ON s.assignment_id = r.assignment_id
-        JOIN review.batch b ON b.batch_id = s.batch_id WHERE b.vocabulary = %s""", [vocab])
+        JOIN review.item i ON i.item_id = s.item_id WHERE i.vocabulary = %s""", [vocab])
     n_db = cur.fetchone()[0]
     con.close()
     for x in assigns:

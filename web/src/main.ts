@@ -133,7 +133,7 @@ async function viewHome() {
 }
 
 // 3. Brief
-function viewBrief(batchId: string, vocab: Vocab, kind: string, n: number) {
+function viewBrief(batchId: string, vocab: Vocab | "mixed", kind: string, n: number) {
   keyHandler = (e) => { if (e.key === "Enter") go(); };
   const b = BRIEF[vocab];
   const go = () => { store.set(`vr-brief-${batchId}`, true); location.hash = `#/b/${batchId}/1`; };
@@ -143,7 +143,7 @@ function viewBrief(batchId: string, vocab: Vocab, kind: string, n: number) {
     ${kind === "curation" ? `<h2 class="sub">What you are asked</h2><p>This is a curation batch. For each variable, say whether it belongs to the construct shown, belongs in one of the neighbouring constructs, or should be rejected. For a note about several members, answer for each member named.</p>` :
       `<h2 class="sub">What you are asked</h2><p>For each item you say whether it belongs to the construct. Where the item has been compared with another item of the same construct, you also say whether the comparison grade is right.</p>
     <h2 class="sub">The grades</h2>
-    <dl class="grades">${Object.entries(GRADES[vocab]).map(([g, m]) => `<dt>${g[0].toUpperCase() + g.slice(1)}</dt><dd>${esc(m)} <span class="muted">For example, ${esc(b.examples[g][0].toLowerCase() + b.examples[g].slice(1))}</span></dd>`).join("")}</dl>`}
+    <dl class="grades">${Object.entries(GRADES[vocab === "mixed" ? "scv" : vocab]).map(([g, m]) => `<dt>${g[0].toUpperCase() + g.slice(1)}</dt><dd>${esc(m)} <span class="muted">For example, ${esc(b.examples[g][0].toLowerCase() + b.examples[g].slice(1))}</span></dd>`).join("")}</dl>`}
     <h2 class="sub">Time and answers</h2>
     <p>${n} items, about ${Math.max(5, Math.round((15 * n) / 25))} minutes. Unsure is a valid answer. Every answer is saved as you give it, so you can stop and come back.</p>
     <h2 class="sub">Keys</h2><p class="muted small">Y, N and U answer the question shown, 1 to 5 pick a neighbour, Enter goes on, Backspace goes back.</p>
