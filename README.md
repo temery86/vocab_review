@@ -1,6 +1,6 @@
 # Vocabulary review
 
-Expert review site for the survey (`scv`) and register (`rvv`) vocabularies. Build instructions in `CLAUDE.md`, decisions in `audit/DECISIONS.md`. Working title per V-01.
+Expert review site for the survey (`scv`) and register (`rvv`) vocabularies. The vocabularies live in their own repositories (on this machine under `~/Desktop/Question Bank/scv` and `register-corpus`), and every tool takes the vocabulary repository path as its first argument. Build instructions in `CLAUDE.md`, decisions in `audit/DECISIONS.md`. Working title per V-01.
 
 The repository holds no review data and no secret. Review content lives in Supabase and is read only after sign in.
 
@@ -34,7 +34,7 @@ cd web && npm run dev                        # the site at http://localhost:5173
 3. Settings, API. Add `review` to the exposed schemas.
 4. Authentication. Turn off new user sign ups. Keep email sign in. In the email template for the magic link, show the code with `{{ .Token }}` so reviewers get six digits rather than a link. Set the site URL to the GitHub Pages address.
 5. Add yourself as owner. Write a small CSV outside any repository with columns `email,name,affiliation,expertise,programmes,role,consent_acknowledgement` and run `.venv/bin/python tools/make_reviewers.py <csv>`.
-6. Load the vocabularies. `.venv/bin/python tools/load_items.py ../scv --export scv-review-0.3.0` and `.venv/bin/python tools/load_items.py ../register-corpus --export rvv-review-0.1.0`.
+6. Load the vocabularies. `.venv/bin/python tools/load_items.py <path to scv> --export scv-review-0.3.0` and `.venv/bin/python tools/load_items.py <path to register-corpus> --export rvv-review-0.1.0`.
 7. Front end. Create the GitHub repository, set repository variables `SUPABASE_URL` and `SUPABASE_ANON_KEY`, set Pages to deploy from GitHub Actions, and push `main`. Locally, `web/.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` runs the site against the project.
 8. Sign in, open Admin, and build an owner batch from either vocabulary (stop point 4, the owner pilot).
 

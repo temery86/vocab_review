@@ -8,7 +8,7 @@ reported apart from invited rounds and never pooled for the headline estimates (
 - Agreement on overlap items, Cohen's kappa for membership and for grade.
 - Gold item accuracy per reviewer, the owner included so drift is visible.
 - Gap detection. Free text better construct answers and missing construct comments, embedded with the vocabulary's
-  pinned model and clustered when sentence_transformers is importable (run with ../scv/.venv/bin/python), else listed.
+  pinned model and clustered when sentence_transformers is importable (run with the scv repository's .venv python), else listed.
   Clusters with answers from more than one reviewer are candidate systematic gaps.
 - Error patterns. Wrong answers by method, construct type, programme or country and placement.
 - For each stratum of an invited round, whether the lower bound clears the V-06 threshold (membership 0.95, grade 0.85).
@@ -29,7 +29,7 @@ from _common import audit, vocab_of  # noqa: E402
 THRESH = {"membership": 0.95, "grade": 0.85}
 STRATA = {"scv": ["programme", "construct_type", "method", "grade", "battery_construct"],
           "rvv": ["country", "body", "placement", "statement_basis", "provisional", "definition_provenance"]}
-MODEL = Path(__file__).resolve().parents[2] / "scv" / "models" / "BAAI__bge-large-en-v1.5@d4aa6901d3a4"
+MODEL_NAME = "BAAI__bge-large-en-v1.5@d4aa6901d3a4"     # the pinned model of ../scv (D-25), found from the vocabulary repository
 
 
 def wilson(k, n, z=1.96):
@@ -151,14 +151,15 @@ def main():
         try:
             from sentence_transformers import SentenceTransformer
             from sklearn.cluster import AgglomerativeClustering
-            V = SentenceTransformer(str(MODEL)).encode([t for _, t in texts], normalize_embeddings=True)
+            model = next(p for p in (repo / "models" / MODEL_NAME, repo.parent / "scv" / "models" / MODEL_NAME) if p.exists())
+            V = SentenceTransformer(str(model)).encode([t for _, t in texts], normalize_embeddings=True)
             lab = AgglomerativeClustering(n_clusters=None, distance_threshold=0.35, metric="cosine", linkage="average").fit(V).labels_ \
                 if len(texts) > 1 else [0]
             groups = defaultdict(list)
             for (rv, t), k in zip(texts, lab):
                 groups[k].append((rv, t))
         except Exception as e:  # the pinned model is not importable here
-            L += [f"Clustering skipped ({type(e).__name__}), run with ../scv/.venv/bin/python for the pinned model. The answers are listed.", ""]
+            L += [f"Clustering skipped ({type(e).__name__}), run with the scv repository's .venv python for the pinned model. The answers are listed.", ""]
         if groups:
             L += ["| Cluster | Reviewers | Answers | Example |", "|---|---|---|---|"]
             for k, xs in sorted(groups.items(), key=lambda kv: -len({r for r, _ in kv[1]})):
