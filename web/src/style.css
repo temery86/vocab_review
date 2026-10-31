@@ -46,7 +46,9 @@ em, i { font-style: normal; }
 dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: var(--s1) var(--s4); margin: var(--s2) 0 0; }
 dl.kv dt { color: var(--text-muted); font-size: var(--fs-sm); } dl.kv dd { margin: 0; overflow-wrap: anywhere; }
 @media (max-width: 480px) { dl.kv { grid-template-columns: 1fr; } dl.kv dd { margin-bottom: var(--s2); } }
-dl.grades dt { margin-top: var(--s3); } dl.grades dd { margin: var(--s1) 0 0; }
+dl.grades dt { margin-top: var(--s3); font-weight: 600; } dl.grades dd { margin: var(--s1) 0 0; }
+h2.sub { font-size: var(--fs-base); font-weight: 600; margin: var(--s5) 0 var(--s1); }
+.explain { color: var(--text-muted); margin: 0 0 var(--s3); max-width: 46rem; }
 
 fieldset { border: 0; padding: 0; margin: var(--s5) 0; min-width: 0; }
 legend { font-weight: 600; font-size: var(--fs-lg); margin-bottom: var(--s3); }

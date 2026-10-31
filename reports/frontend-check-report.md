@@ -105,6 +105,8 @@ Done by the agent on 30 October 2026 from the demo build, the page source and th
 
 ## Deviations from brand/STYLE.md
 
+- Card order. At Tom Emery's request on 31 October 2026 the item card (survey question or register variable) is on the left and the construct card on the right, and the item comes first when they stack. The guide had the construct first. The brief has bold sub-headings and the grade question opens with a plain line on what the comparison means, also at his request. The 44 checks pass after the change.
+
 - Footer. The guide puts the footer with the logos on every page and no logos on the review screen. The review screen therefore has no footer. The sign in screen shows the logos below the form instead of in the footer, so they do not appear twice.
 - Logo links. The guide asks for the logos to link to the projects' public sites. No dedicated public site for SSHOC-NL or Macroscope could be confirmed (both appear on partner and news pages only), so the addresses are empty in `web/src/config.ts` and the logos are shown unlinked, with their names as accessible labels, until Tom Emery fills them in.
 - Neighbour constructs. The guide asks for the first line of each neighbour's definition. The item files carry the neighbour's PID and label only, so the label is shown. Adding a short definition to `neighbour_constructs` in the survey and register item builders would close this.

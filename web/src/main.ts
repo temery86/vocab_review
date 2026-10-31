@@ -138,12 +138,15 @@ function viewBrief(batchId: string, vocab: Vocab, kind: string, n: number) {
   const b = BRIEF[vocab];
   const go = () => { store.set(`vr-brief-${batchId}`, true); location.hash = `#/b/${batchId}/1`; };
   render(`<section class="narrow"><h1>Before you start</h1>
-    <p>${esc(b.what)}</p><p>${esc(b.item)}</p>
-    ${kind === "curation" ? `<p>This is a curation batch. For each variable, say whether it belongs to the construct shown, belongs in one of the neighbouring constructs, or should be rejected. For a note about several members, answer for each member named.</p>` :
-      `<p>For each item you are asked whether it belongs to the construct. Where the item has been compared with another item of the same construct, you are also asked whether the comparison grade is right.</p>
-    <dl class="grades">${Object.entries(GRADES[vocab]).map(([g, m]) => `<dt>${g}</dt><dd>${esc(m)} <span class="muted">For example, ${esc(b.examples[g])}</span></dd>`).join("")}</dl>`}
+    <h2 class="sub">What a construct is</h2><p>${esc(b.what)}</p>
+    <h2 class="sub">What you will see</h2><p>${esc(b.item)}</p>
+    ${kind === "curation" ? `<h2 class="sub">What you are asked</h2><p>This is a curation batch. For each variable, say whether it belongs to the construct shown, belongs in one of the neighbouring constructs, or should be rejected. For a note about several members, answer for each member named.</p>` :
+      `<h2 class="sub">What you are asked</h2><p>For each item you say whether it belongs to the construct. Where the item has been compared with another item of the same construct, you also say whether the comparison grade is right.</p>
+    <h2 class="sub">The grades</h2>
+    <dl class="grades">${Object.entries(GRADES[vocab]).map(([g, m]) => `<dt>${g[0].toUpperCase() + g.slice(1)}</dt><dd>${esc(m)} <span class="muted">For example, ${esc(b.examples[g][0].toLowerCase() + b.examples[g].slice(1))}</span></dd>`).join("")}</dl>`}
+    <h2 class="sub">Time and answers</h2>
     <p>${n} items, about ${Math.max(5, Math.round((15 * n) / 25))} minutes. Unsure is a valid answer. Every answer is saved as you give it, so you can stop and come back.</p>
-    <p class="muted small">Keys. Y, N and U answer the question shown, 1 to 5 pick a neighbour, Enter goes on, Backspace goes back.</p>
+    <h2 class="sub">Keys</h2><p class="muted small">Y, N and U answer the question shown, 1 to 5 pick a neighbour, Enter goes on, Backspace goes back.</p>
     <button id="go">Begin</button></section>`, "Before you start");
   $("#go").onclick = go;
 }
@@ -215,7 +218,7 @@ async function viewItem(batchId: string, pos: number) {
   const back = () => { if (idx > 0) location.hash = `#/b/${batchId}/${items[idx - 1].position}`; };
 
   render(`<div class="progress"><span>Item ${idx + 1} of ${items.length}</span><div class="bar" role="progressbar" aria-label="Position in batch" aria-valuemin="1" aria-valuemax="${items.length}" aria-valuenow="${idx + 1}"><span style="width:${(100 * (idx + 1)) / items.length}%"></span></div><span id="saved" class="saved" aria-live="polite"></span></div>
-    <div class="pair">${constructCard(i)}${curation === "membership" ? "" : itemCard(i)}</div>
+    <div class="pair">${curation === "membership" ? "" : itemCard(i)}${constructCard(i)}</div>
     ${graded ? anchorCard(i) : ""}<div id="qs"></div>
     <details class="comment"><summary>Add a comment</summary><label for="cm" class="sr">Comment</label><textarea id="cm" rows="3">${esc(a.comment)}</textarea></details>
     <nav class="row nav" aria-label="Items"><button class="ghost" id="back" ${idx === 0 ? "disabled" : ""}>Back</button><span class="grow"></span><button id="next">${idx + 1 < items.length ? "Next item" : "Finish"}</button></nav>`,
@@ -262,6 +265,9 @@ async function viewItem(batchId: string, pos: number) {
       : `<fieldset><legend>Does this ${vocab === "rvv" ? "variable" : "item"} measure this construct?</legend><div class="row wrap">${btn("b", "yes", a.belongs, "Yes", "Y")}${btn("b", "no", a.belongs, "No", "N")}${btn("b", "unsure", a.belongs, "Unsure", "U")}</div></fieldset>
          ${a.belongs === "no" ? neighbours(a.better_construct_pid) : ""}`;
     const q2 = graded && a.belongs && a.belongs !== "no" ? `<fieldset><legend>Is the grade right?</legend>
+        <p class="explain">${vocab === "rvv"
+          ? "This variable has been compared with the one under Compared with. The grade says how closely the two match, and whether data from both can be combined as they are, after a simple recode, or only with extra assumptions."
+          : "This question has been compared with the one under Compared with. The grade says how closely the two match, and whether answers to both can be combined as they are, after a simple recode, or only with extra assumptions."}</p>
         <p><span class="chip g-${esc(i.grade)}">${esc(i.grade)}</span> ${esc(GRADES[vocab][i.grade!] ?? "")}</p>${reasonsList(i)}
         <div class="row wrap">${btn("g", "yes", a.grade_ok, "Yes", "Y")}${btn("g", "no", a.grade_ok, "No", "N")}${btn("g", "unsure", a.grade_ok, "Unsure", "U")}</div>
         ${a.grade_ok === "no" ? `<div class="row wrap" role="group" aria-label="Correct grade">${Object.keys(GRADES[vocab]).map((g) => btn("cg", g, a.correct_grade, g)).join("")}</div>` : ""}</fieldset>` : "";
